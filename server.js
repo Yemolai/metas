@@ -2,10 +2,21 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
 const { makeExecutableSchema } = require('graphql-tools');
+const db = require('./models/');
 
 const typeDefs = [`
+type Usuario {
+  id: ID!
+  guid: String
+  matricula: String
+  nome: String
+  usuario: String
+  senha: String
+}
+
 type Query {
-  hello: String
+  hello: String,
+  usuarios: [Usuario]
 }
 
 schema {
