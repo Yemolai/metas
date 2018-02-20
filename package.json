@@ -1,20 +1,26 @@
 {
   "name": "backend-sedop-metas",
   "version": "1.0.0",
-  "description": "",
+  "description": "backend server software to provide data and authentication to milestone control application",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --timeout 10000"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Romulo Gabriel Rodrigues",
+  "license": "CC-BY-SA-4.0",
+  "repository": "https://bitbucket.org/sedoppacoti/metas-backend",
   "dependencies": {
     "apollo-server-express": "^1.3.2",
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
-    "graphql": "^0.13.0",
+    "graphql": "^0.13.1",
     "graphql-tools": "^2.21.0",
     "mysql2": "^1.5.2",
     "sequelize": "^4.33.4"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "chai-http": "^3.0.0",
+    "mocha": "^5.0.1"
   }
 }
