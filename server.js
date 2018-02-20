@@ -1,57 +1,22 @@
 const express = require('express');
+const cors = require('cors');
+const { graphqlExpress, graphiqlExpress } = require('graphql-server-express');
 const bodyParser = require('body-parser');
-const { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
-const { makeExecutableSchema } = require('graphql-tools');
-const db = require('./models/');
 
-const channels = [{
-  id: 1,
-  name: 'soccer',
-}, {
-  id: 2,
-  name: 'baseball',
-}];
+const schema = require('./src/schema');
 
-let nextId = 3;
+const PORT = 7700;
+const server = express();
+server.use('*', cors({ origin: 'http://localhost:8000' })); //Restrict the client-origin for security reasons.
 
-const typeDefs = [
-  `type Channel {
-      id: ID! # "!" denotes a required field
-      name: String
-      messages: [Message]!
-    }
+server.use('/graphql', bodyParser.json(), graphqlExpress({
+  schema 
+}));
 
-    type Message {
-      id: ID!
-      text: String
-    }
-    # This type specifies the entry points into our API. 
-    type Query {
-      channels: [Channel]    # "[]" means this is a list of channels
-      channel(id: ID!): Channel
-    }
+server.use('/graphiql', graphiqlExpress({
+  endpointURL: '/graphql'
+}));
 
-    # The mutation root type, used to define all mutations.
-    type Mutation {
-      # A mutation to add a new channel to the list of channels
-      addChannel(name: String!): Channel
-    }
-  `
-];
-
-const resolvers = {
-  Query: {
-    hello(root) {
-      return 'world';
-    }
-  }
-};
-
-const schema = makeExecutableSchema({typeDefs, resolvers});
-const app = express();
-app.use('/graphql', bodyParser.json(), graphqlExpress({schema}));
-app.use('/graphiql', graphiqlExpress({endpointURL: '/graphql'}));
-app.use('/db', function (req, res, next) {
-
-})
-app.listen(4000, () => console.log('Now browse to localhost:4000/graphiql'));
+server.listen(PORT, () =>
+  console.log(`GraphQL Server is now running on http://localhost:${PORT}`)
+);

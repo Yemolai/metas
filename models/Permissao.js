@@ -18,14 +18,14 @@ module.exports = (sequelize, DataTypes) => {
     atual_read: DataTypes.BOOLEAN,
     atual_update: DataTypes.BOOLEAN,
     atual_delete: DataTypes.BOOLEAN,
-    own_setor_update: Sequelize.BOOLEAN,
-    own_setor_delete: Sequelize.BOOLEAN,
-    own_coord_update: Sequelize.BOOLEAN,
-    own_coord_delete: Sequelize.BOOLEAN,
-    own_meta_update: Sequelize.BOOLEAN,
-    own_meta_delete: Sequelize.BOOLEAN,
-    own_atual_update: Sequelize.BOOLEAN,
-    own_atual_delete: Sequelize.BOOLEAN
+    own_setor_update: DataTypes.BOOLEAN,
+    own_setor_delete: DataTypes.BOOLEAN,
+    own_coord_update: DataTypes.BOOLEAN,
+    own_coord_delete: DataTypes.BOOLEAN,
+    own_meta_update: DataTypes.BOOLEAN,
+    own_meta_delete: DataTypes.BOOLEAN,
+    own_atual_update: DataTypes.BOOLEAN,
+    own_atual_delete: DataTypes.BOOLEAN
   }, {
     freezeTableName: true,
     tableName: 'permissoes'
