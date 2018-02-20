@@ -4,6 +4,7 @@
   "description": "backend server software to provide data and authentication to milestone control application",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "mocha --timeout 10000"
   },
   "author": "Romulo Gabriel Rodrigues",
