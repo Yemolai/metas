@@ -7,7 +7,7 @@ const schema = require('./src/schema');
 
 const PORT = 7700;
 const server = express();
-server.use('*', cors({ origin: 'http://localhost:8000' })); //Restrict the client-origin for security reasons.
+server.use('*', cors({ origin: 'http://localhost:8080' })); //Restrict the client-origin for security reasons.
 
 server.use('/graphql', bodyParser.json(), graphqlExpress({
   schema 

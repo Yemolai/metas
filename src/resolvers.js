@@ -79,6 +79,24 @@ const getFiltered1N = (model, fk, filter) => obj => get1N(model, fk)(obj)
   .then(N => N.filter(filter(N, obj)))
 
 module.exports = {
+  // custom Obj type to use in schema
+  Obj: new GraphQLScalarType({
+    name: 'Obj',
+    description: 'JSON object',
+    parseValue(value) {
+      return JSON.parse(value);
+    },
+    serialize(value) {
+      return JSON.stringify(value);
+    },
+    parseLiteral(ast) {
+      if (ast.kind === Kind.STRING) {
+        return JSON.parse(ast.value);
+      }
+      return null;
+    }
+  }),
+  // custom Date type to use in the schema
   Date: new GraphQLScalarType({
     name: 'Date',
     description: 'Date custom scalar type',
@@ -110,6 +128,7 @@ module.exports = {
       return null;
     },
   }),
+  // Type Usuario related to the model Usuario
   Usuario: {
     permissoes: getN1(db.Permissao, 'permissoes'),
     setor: getN1(db.Setor, 'setor'),
@@ -145,16 +164,24 @@ module.exports = {
     submetas: get1N(db.Meta, 'pai')
   },
   Query: {
-    permissoes: () => db.Permissao.findAll(),
+    permissoes: (_, { filter }) => db.Permissao.findAll(filter ? { filter } : {}),
     permissao: (root, { id }) => db.Permissao.findById(id),
-    usuarios: () => db.Usuario.findAll(),
+    usuarios: (_, { filter }) => db.Usuario.findAll(filter ? { filter } : {}),
     usuario: (root, { id }) => db.Usuario.findById(id),
-    setores: () => db.Setor.findAll(),
+    setores: (_, { filter }) => db.Setor.findAll(filter ? { filter } : {}),
     setor: (root, { id }) => db.Setor.findById(id),
+    // coordenadorias: (_, { filter }) => db.Coordenadoria.findAll(filter ? { filter } : {}),
     coordenadoria: (root, { id }) => db.Coordenadoria.findById(id),
+    // metas: (_, { filter }) => db.Meta.findAll(filter ? { filter } : {}),
     meta: (root, { id }) => db.Meta.findById(id)
   },
   Mutation: {
+    deleteMeta: (_, { id }) => {
+      return db.Meta.findById(id)
+      .then(meta => meta.destroy())
+      .then(() => id)
+      .catch(() => 0)
+    },
     addMeta: (_, args) => {
       if (!args.titulo) {
         return null
@@ -171,10 +198,38 @@ module.exports = {
         autor: args.autor || null
       })
     },
-    deleteMeta: (_, { id }) => {
-      return db.Meta.findById(id).destroy().then(() => id).catch(() => 0)
+    deleteCoordenadoria: (_, { id }) => {
+      return db.Coordenadoria.findById(id)
+      .then(coord => coord.destroy())
+      .then(() => id)
+      .catch(() => 0)
+    },
+    addCoordenadoria: (_, args) => {
+      let required = ['nome', 'sigla']
+      for (r of required) {
+        if (args[r] === null) {
+          return null
+        }
+      }
+      return db.Coordenadoria.create({
+        nome: args.nome,
+        sigla: args.sigla,
+        endereco: args.endereco || null,
+        telefone: args.telefone || null,
+        ramal: args.ramal || null,
+        setor: args.setor,
+        responsavel: args.responsavel || null,
+        autor: args.autor || null,
+      })
+    },
+    deleteUsuario: (_, { id }) => {
+      return db.Meta.findById(id)
+      .then(usr => usr.destroy())
+      .then(() => id)
+      .catch(() => 0)
     },
     addUsuario: (_, args) => {
+      // required fields
       if (!('usuario' in args && 'nome' in args && 'permissoes' in args)) {
         return null;
       }
@@ -187,6 +242,36 @@ module.exports = {
         permissoes: args.permissoes,
         setor: args.setor || null,
         coordenadoria: args.coordenadoria || null
+      })
+    },
+    deleteSetor: (_, { id }) => {
+      return db.Setor.findById(id)
+        .then(setor => setor.destroy())
+        .then(() => id)
+        .catch(() => 0)
+    },
+    addSetor: (_, args) => {
+      // required fields
+      if (!('sigla' in args && 'nome' in args)) {
+        return null;
+      }
+      let {
+        sigla,
+        nome,
+        endereco,
+        telefone,
+        ramal,
+        responsavel,
+        autor
+      } = args
+      return db.Setor.create({
+        sigla,
+        nome,
+        endereco,
+        telefone,
+        ramal,
+        responsavel,
+        autor
       })
     },
     deletePermissao: (root, args) => {

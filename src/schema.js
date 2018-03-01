@@ -5,6 +5,8 @@ const resolvers = require('./resolvers'); // Will be implemented at a later stag
 const typeDefs = `
     scalar Date
 
+    scalar Obj
+
     type Permissao {
       id: ID!
       nome: String!
@@ -48,8 +50,8 @@ const typeDefs = `
 
     type Setor {
       id: ID!
-      nome: String!
-      sigla: String!
+      nome: String! @unique
+      sigla: String! @unique
       endereco: String
       telefone: String
       ramal: String
@@ -60,8 +62,8 @@ const typeDefs = `
 
     type Coordenadoria {
       id: ID!
-      nome: String!
-      sigla: String!
+      nome: String! @unique
+      sigla: String! @unique
       endereco: String
       telefone: String
       ramal: String
@@ -99,13 +101,14 @@ const typeDefs = `
       usuario(id: ID!): Usuario
       usuarios: [Usuario!]
       setor(id: ID!): Setor
-      setores: [Setor!]
+      setores(filter: Obj): [Setor!]
       coordenadoria(id: ID!): Coordenadoria
       meta(id: ID!): Meta
     }
 
     # The mutation root type, used to define all mutations.
     type Mutation {
+      deleteMeta(id: ID!): Int
       addMeta(
         titulo: String!,
         escopo_previsto: Float,
@@ -117,17 +120,38 @@ const typeDefs = `
         coordenadoria: Int,
         autor: Int
       ): Meta
-      deleteMeta(id: ID!): Int
+      deleteCoordenadoria(id: ID!): Int
+      addCoordenadoria(
+        nome: String!,
+        sigla: String!,
+        endereco: String,
+        telefone: String,
+        ramal: String,
+        setor: Int!,
+        responsavel: Int,
+        autor: Int,
+      ): Coordenadoria
+      deleteUsuario(id: ID!): Int
       addUsuario(
         guid: String,
         matricula: String,
         nome: String!,
-        usuario: String,
+        usuario: String!,
         senha: String,
         permissoes: Int!,
         setor: Int,
         coordenadoria: Int
       ): Usuario
+      deleteSetor(id: ID!): Int
+      addSetor(
+        sigla: String!,
+        nome: String!,
+        endereco: String,
+        telefone: String,
+        ramal: String,
+        responsavel: Int,
+        autor: Int
+      ): Setor
       deletePermissao(id: ID!): Int
       addPermissao(
         nome: String!,
