@@ -163,25 +163,55 @@ module.exports = {
     autor: getN1(db.Usuario, 'autor'),
     submetas: get1N(db.Meta, 'pai')
   },
+  Atualizacao: {
+    meta: getN1(db.Meta, 'meta'),
+    pai: getN1(db.Meta, 'pai'),
+    responsavel: getN1(db.Usuario, 'responsavel'),
+    coordenadoria: getN1(db.Coordenadoria, 'coordenadoria'),
+    autor: getN1(db.Usuario, 'autor'),
+  },
   Query: {
     permissoes: (_, { filter }) => db.Permissao.findAll(filter ? { filter } : {}),
-    permissao: (root, { id }) => db.Permissao.findById(id),
+    permissao: (_, { id }) => db.Permissao.findById(id),
     usuarios: (_, { filter }) => db.Usuario.findAll(filter ? { filter } : {}),
-    usuario: (root, { id }) => db.Usuario.findById(id),
+    usuario: (_, { id }) => db.Usuario.findById(id),
     setores: (_, { filter }) => db.Setor.findAll(filter ? { filter } : {}),
-    setor: (root, { id }) => db.Setor.findById(id),
+    setor: (_, { id }) => db.Setor.findById(id),
     // coordenadorias: (_, { filter }) => db.Coordenadoria.findAll(filter ? { filter } : {}),
-    coordenadoria: (root, { id }) => db.Coordenadoria.findById(id),
+    coordenadoria: (_, { id }) => db.Coordenadoria.findById(id),
     // metas: (_, { filter }) => db.Meta.findAll(filter ? { filter } : {}),
-    meta: (root, { id }) => db.Meta.findById(id)
+    meta: (_, { id }) => db.Meta.findById(id),
+    atualizacoes: (_, { filter }) => db.Atualizacao.findAll(filter ? { filter } : {} )
   },
   Mutation: {
-    deleteMeta: (_, { id }) => {
-      return db.Meta.findById(id)
+    deleteAtualizacao: (_, { id }) => db.Atualizacao.findById(id)
+      .then(atualizacao => atualizacao.destroy())
+      .then(() => id)
+      .catch(() => 0),
+    addAtualizacao: (_, args) => {
+      return db.Atualizacao.create({
+        titulo: args.titulo || null,
+        resumo: args.resumo || null,
+        estado: args.estado || null,
+        escopo_previsto: args.escopo_previsto || null,
+        escopo_realizado: args.escopo_realizado || null,
+        inicio_previsto: args.inicio_previsto || null,
+        inicio_realizado: args.inicio_realizado || null,
+        fim_previsto: args.fim_previsto || null,
+        fim_realizado: args.fim_realizado || null,
+        custo_previsto: args.custo_previsto || null,
+        custo_realizado: args.custo_realizado || null,
+        autor: args.autor || null,
+        meta: args.meta,
+        responsavel: args.responsavel || null,
+        pai: args.pai || null,
+        coordenadoria: args.coordenadoria || null,
+      })
+    },
+    deleteMeta: (_, { id }) => db.Meta.findById(id)
       .then(meta => meta.destroy())
       .then(() => id)
-      .catch(() => 0)
-    },
+      .catch(() => 0),
     addMeta: (_, args) => {
       if (!args.titulo) {
         return null
@@ -198,12 +228,10 @@ module.exports = {
         autor: args.autor || null
       })
     },
-    deleteCoordenadoria: (_, { id }) => {
-      return db.Coordenadoria.findById(id)
+    deleteCoordenadoria: (_, { id }) => db.Coordenadoria.findById(id)
       .then(coord => coord.destroy())
       .then(() => id)
-      .catch(() => 0)
-    },
+      .catch(() => 0),
     addCoordenadoria: (_, args) => {
       let required = ['nome', 'sigla']
       for (r of required) {
@@ -222,12 +250,10 @@ module.exports = {
         autor: args.autor || null,
       })
     },
-    deleteUsuario: (_, { id }) => {
-      return db.Meta.findById(id)
+    deleteUsuario: (_, { id }) => db.Meta.findById(id)
       .then(usr => usr.destroy())
       .then(() => id)
-      .catch(() => 0)
-    },
+      .catch(() => 0),
     addUsuario: (_, args) => {
       // required fields
       if (!('usuario' in args && 'nome' in args && 'permissoes' in args)) {
@@ -244,45 +270,29 @@ module.exports = {
         coordenadoria: args.coordenadoria || null
       })
     },
-    deleteSetor: (_, { id }) => {
-      return db.Setor.findById(id)
+    deleteSetor: (_, { id }) => db.Setor.findById(id)
         .then(setor => setor.destroy())
         .then(() => id)
-        .catch(() => 0)
-    },
+        .catch(() => 0),
     addSetor: (_, args) => {
-      // required fields
       if (!('sigla' in args && 'nome' in args)) {
         return null;
       }
-      let {
-        sigla,
-        nome,
-        endereco,
-        telefone,
-        ramal,
-        responsavel,
-        autor
-      } = args
       return db.Setor.create({
-        sigla,
-        nome,
-        endereco,
-        telefone,
-        ramal,
-        responsavel,
-        autor
+        sigla: args.sigla,
+        nome: args.nome,
+        endereco: args.endereco || null,
+        telefone: args.telefone || null,
+        ramal: args.ramal || null,
+        responsavel: args.responsavel || null,
+        autor: args.autor || null
       })
     },
-    deletePermissao: (root, args) => {
-      return db.Permissao.findById(args.id)
+    deletePermissao: (root, args) => db.Permissao.findById(args.id)
         .then(permissao => permissao.destroy())
         .then(() => args.id)
-        .catch(() => 0)
-    },
-    addPermissao: (root, args) => {
-      const newPermissao = {
-        id: null,
+        .catch(() => 0),
+    addPermissao: (_, args) => db.Permissao.create({
         nome: args.nome,
         setor_create: args.setor_create ? args.setor_create : false,
         setor_read: args.setor_read ? args.setor_read : false,
@@ -308,8 +318,7 @@ module.exports = {
         own_meta_delete: args.own_meta_delete ? args.own_meta_delete : false,
         own_atual_update: args.own_atual_update ? args.own_atual_update : false,
         own_atual_delete: args.own_atual_delete ? args.own_atual_delete : false,
-      };
-      return db.Permissao.create(newPermissao).then((permissao) => permissao)
-    },
+      })
+        .then((permissao) => permissao)
   },
 };

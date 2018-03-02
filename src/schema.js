@@ -94,6 +94,27 @@ const typeDefs = `
       submetas: [Meta!]
     }
 
+    type Atualizacao {
+      id: ID!
+      titulo: String
+      resumo: String
+      estado: String
+      escopo_previsto: Float
+      escopo_realizado: Float
+      inicio_previsto: Date
+      inicio_realizado: Date
+      fim_previsto: Date
+      fim_realizado: Date
+      custo_previsto: Float
+      custo_realizado: Float
+      autor: Usuario
+      meta: Meta!
+      responsavel: Usuario
+      pai: Meta
+      coordenadoria: Coordenadoria
+      createdAt: Date
+    }
+
     # This type specifies the entry points into our API. 
     type Query {
       permissao(id: ID!): Permissao
@@ -104,10 +125,30 @@ const typeDefs = `
       setores(filter: Obj): [Setor!]
       coordenadoria(id: ID!): Coordenadoria
       meta(id: ID!): Meta
+      atualizacoes(filter: Obj): [Atualizacao]
     }
 
     # The mutation root type, used to define all mutations.
     type Mutation {
+      deleteAtualizacao(id: ID!): Int
+      addAtualizacao(
+        titulo: String,
+        resumo: String,
+        estado: String,
+        escopo_previsto: Float,
+        escopo_realizado: Float,
+        inicio_previsto: Date,
+        inicio_realizado: Date,
+        fim_previsto: Date,
+        fim_realizado: Date,
+        custo_previsto: Float,
+        custo_realizado: Float,
+        autor: Int,
+        meta: Int,
+        responsavel: Int,
+        pai: Int,
+        coordenadoria: Int
+      ): Atualizacao
       deleteMeta(id: ID!): Int
       addMeta(
         titulo: String!,
