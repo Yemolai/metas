@@ -70,7 +70,11 @@ const typeDefs = `
       setor: Setor
       responsavel: Usuario
       autor: Usuario
-      metas(submetas: Boolean): [Meta!]
+      metas(
+        submetas: Boolean,
+        limit: Int,
+        offset: Int
+      ): [Meta!]
     }
 
     type Meta {
@@ -92,6 +96,7 @@ const typeDefs = `
       coordenadoria: Coordenadoria
       autor: Usuario
       submetas: [Meta!]
+      atualizacoes: [Atualizacao]
     }
 
     type Atualizacao {

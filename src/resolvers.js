@@ -1,3 +1,5 @@
+const isNumber = value =>!isNaN(Number(value));
+
 // Sequelize database instance/reference/models
 const db = require('../models');
 const Op = db.Sequelize.Op;
@@ -143,7 +145,23 @@ module.exports = {
     setor: getN1(db.Setor, 'setor'),
     responsavel: getN1(db.Usuario, 'responsavel'),
     autor: getN1(db.Usuario, 'autor'),
-    metas: getFiltered1N(db.Meta, 'coordenadoria', (() => m => m.pai === null))
+    metas: (_, { submetas, limit, offset }) => {
+      let conditions = {
+        where: {},
+        limit: isNumber(limit) ? limit : 100,
+        offset: isNumber(offset) ? offset : 0
+      }
+      if (submetas === false) {
+        conditions[pai] = null
+      }
+      if (!isNaN(Number(limit))) {
+        conditions[limit] = limit
+      }
+      if (!isNaN(Number(offset))) {
+        conditions[offset] = offset
+      }
+      return db.Meta.findAll(conditions)
+    }
   },
   Meta: {
     resumo: getLastValue(db.Atualizacao, 'resumo', 'meta'),
@@ -161,14 +179,15 @@ module.exports = {
     responsavel: getN1(db.Usuario, 'responsavel'),
     coordenadoria: getN1(db.Coordenadoria, 'coordenadoria'),
     autor: getN1(db.Usuario, 'autor'),
-    submetas: get1N(db.Meta, 'pai')
+    submetas: get1N(db.Meta, 'pai'),
+    atualizacoes: get1N(db.Atualizacao, 'meta')
   },
   Atualizacao: {
     meta: getN1(db.Meta, 'meta'),
     pai: getN1(db.Meta, 'pai'),
     responsavel: getN1(db.Usuario, 'responsavel'),
     coordenadoria: getN1(db.Coordenadoria, 'coordenadoria'),
-    autor: getN1(db.Usuario, 'autor'),
+    autor: getN1(db.Usuario, 'autor')
   },
   Query: {
     permissoes: (_, { filter }) => db.Permissao.findAll(filter ? { filter } : {}),
@@ -181,7 +200,7 @@ module.exports = {
     coordenadoria: (_, { id }) => db.Coordenadoria.findById(id),
     // metas: (_, { filter }) => db.Meta.findAll(filter ? { filter } : {}),
     meta: (_, { id }) => db.Meta.findById(id),
-    atualizacoes: (_, { filter }) => db.Atualizacao.findAll(filter ? { filter } : {} )
+    atualizacoes: _ => db.Atualizacao.findAll()
   },
   Mutation: {
     deleteAtualizacao: (_, { id }) => db.Atualizacao.findById(id)
