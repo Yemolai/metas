@@ -147,7 +147,7 @@ module.exports = {
     autor: getN1(db.Usuario, 'autor'),
     metas: (_, { submetas, limit, offset }) => {
       let conditions = {
-        where: {},
+        where: { coordenadoria: _.id },
         limit: isNumber(limit) ? limit : 100,
         offset: isNumber(offset) ? offset : 0
       }
