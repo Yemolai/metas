@@ -46,6 +46,7 @@ const typeDefs = `
       permissoes: Permissao!
       setor: Setor
       coordenadoria: Coordenadoria
+      responsabilidade: [Meta]
     }
 
     type Setor {
@@ -97,6 +98,8 @@ const typeDefs = `
       autor: Usuario
       submetas: [Meta!]
       atualizacoes: [Atualizacao]
+      createdAt: Date
+      updatedAt: Date
     }
 
     type Atualizacao {

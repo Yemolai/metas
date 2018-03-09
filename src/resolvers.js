@@ -134,7 +134,8 @@ module.exports = {
   Usuario: {
     permissoes: getN1(db.Permissao, 'permissoes'),
     setor: getN1(db.Setor, 'setor'),
-    coordenadoria: getN1(db.Setor, 'coordenadoria')
+    coordenadoria: getN1(db.Setor, 'coordenadoria'),
+    responsabilidade: get1N(db.Meta, 'responsavel')
   },
   Setor: {
     autor: getN1(db.Usuario, 'autor'),
