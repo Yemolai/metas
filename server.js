@@ -7,10 +7,11 @@ require('./src/passport'); // to run passport-related config
 const schema = require('./src/schema');
 const auth = require('./src/routes/auth');
 const user = require('./src/routes/user');
+const cfg = require('./config/server.json');
 
-const PORT = 7700;
+const PORT = cfg.port;
 const server = express();
-server.use('*', cors({ origin: 'http://localhost:8080' })); //Restrict the client-origin for security reasons.
+server.use('*', cors({ origin: cfg.corsOrigin })); //Restrict the client-origin for security reasons.
 server.use(bodyParser.json());
 server.use(bodyParser.urlencoded({ extended: false }));
 
@@ -19,7 +20,9 @@ server.use('/user', passport.authenticate('jwt', {session: false}), user);
 
 server.use('/graphql', bodyParser.json(), graphqlExpress({ schema }));
 
-server.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
+if (cfg.graphiqlEnabled) {
+  server.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
+}
 
 // error handler
 server.use(function(err, req, res, next) {
