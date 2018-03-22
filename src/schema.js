@@ -104,6 +104,7 @@ const typeDefs = `
 
     type Atualizacao {
       id: ID!
+      motivo: String
       titulo: String
       resumo: String
       estado: String
@@ -142,6 +143,7 @@ const typeDefs = `
       addAtualizacao(
         titulo: String,
         resumo: String,
+        motivo: String,
         estado: String,
         escopo_previsto: Float,
         escopo_realizado: Float,

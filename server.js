@@ -15,15 +15,11 @@ server.use(bodyParser.json());
 server.use(bodyParser.urlencoded({ extended: false }));
 
 server.use('/auth', auth)
-server.use('/user', passport.authenticate('jwt', {session: false}, user));
+server.use('/user', passport.authenticate('jwt', {session: false}), user);
 
-server.use('/graphql', bodyParser.json(), graphqlExpress({
-  schema 
-}));
+server.use('/graphql', bodyParser.json(), graphqlExpress({ schema }));
 
-server.use('/graphiql', graphiqlExpress({
-  endpointURL: '/graphql'
-}));
+server.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
 
 // error handler
 server.use(function(err, req, res, next) {
@@ -33,7 +29,10 @@ server.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.json({error: true, message: 'route not found'});
+  res.json({
+    error: res.locals.error || true,
+    message: res.locals.error || 'route not found'
+  });
 });
 
 server.listen(PORT, () =>

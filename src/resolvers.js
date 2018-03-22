@@ -153,14 +153,15 @@ module.exports = {
         offset: isNumber(offset) ? offset : 0
       }
       if (submetas === false) {
-        conditions[pai] = null
+        conditions.where['pai'] = {[Op.eq]: null}
       }
       if (!isNaN(Number(limit))) {
-        conditions[limit] = limit
+        conditions['limit'] = limit
       }
       if (!isNaN(Number(offset))) {
-        conditions[offset] = offset
+        conditions['offset'] = offset
       }
+      console.log({conditions})
       return db.Meta.findAll(conditions)
     }
   },

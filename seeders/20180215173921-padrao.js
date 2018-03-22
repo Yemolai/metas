@@ -1,7 +1,8 @@
 'use strict';
 
 module.exports = {
-  up: queryInterface => queryInterface.bulkInsert('permissoes', [{
+  up: queryInterface => queryInterface.bulkInsert('permissoes',
+  [{
     id: 1,
     nome: 'sudo',
     setor_create: true,
@@ -174,51 +175,6 @@ module.exports = {
     permissoes: 1,
     setor: null,
     coordenadoria: null
-  }]))
-  .then(() => queryInterface.bulkInsert('setores', [{
-    id: 1,
-    nome: 'System Test Department',
-    sigla: 'STD',
-    endereco: null,
-    telefone: null,
-    ramal: null,
-    autor: 1,
-    responsavel: 1
-  }]))
-  .then(() => queryInterface.bulkInsert('coordenadorias', [{
-    id: 1,
-    nome: 'Database Test Subdepartment',
-    sigla: 'DTS',
-    endereco: null,
-    telefone: null,
-    ramal: null,
-    autor: 1,
-    responsavel: 1,
-    setor: 1
-  }]))
-  .then(() => queryInterface.bulkInsert('metas', [{
-    id: 1,
-    titulo: 'Test milestone',
-    escopo_previsto: 7.0,
-    inicio_previsto: new Date('2018-08-09'),
-    fim_previsto: new Date('2018-10-11'),
-    custo_previsto: 485.15,
-    autor: 1,
-    responsavel: 1,
-    coordenadoria: 1,
-    pai: null
-  }]))
-  .then(() => queryInterface.bulkInsert('metas', [{
-    id: 2,
-    titulo: 'Test submilestone',
-    escopo_previsto: 7.0,
-    inicio_previsto: new Date('2018-08-09'),
-    fim_previsto: new Date('2018-10-11'),
-    custo_previsto: 485.15,
-    autor: 1,
-    responsavel: 1,
-    coordenadoria: 1,
-    pai: 1
   }])),
 
   down: (queryInterface, s) => queryInterface.bulkDelete('metas', { 'pai': { [s.Op.not]: null } })

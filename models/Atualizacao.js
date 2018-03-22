@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
     fim_previsto: DataTypes.DATE,
     fim_realizado: DataTypes.DATE,
     custo_previsto: DataTypes.FLOAT,
-    custo_realizado: DataTypes.FLOAT
+    custo_realizado: DataTypes.FLOAT,
+    motivo: DataTypes.STRING // migration: 20180319191907-add-motivo-column-in-atualizacao
     // autor: Usuario.id,
     // meta: Meta.id,
     // responsavel: Usuario.id,
