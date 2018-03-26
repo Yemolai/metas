@@ -2,10 +2,10 @@
 module.exports = (sequelize, DataTypes) => {
   var Meta = sequelize.define('Meta', {
     titulo: DataTypes.STRING,
-    escopo_previsto: DataTypes.FLOAT,
+    escopo_previsto: DataTypes.DECIMAL(32, 12), // was FLOAT
     inicio_previsto: DataTypes.DATE,
     fim_previsto: DataTypes.DATE,
-    custo_previsto: DataTypes.FLOAT
+    custo_previsto: DataTypes.DECIMAL(32, 12) // was FLOAT
     // autor: Usuario.id,
     // responsavel: Usuario.id,
     // coordenadoria: Coordenadoria.id,

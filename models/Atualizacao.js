@@ -4,14 +4,14 @@ module.exports = (sequelize, DataTypes) => {
     titulo: DataTypes.STRING,
     resumo: DataTypes.STRING,
     estado: DataTypes.TEXT,
-    escopo_previsto: DataTypes.FLOAT,
-    escopo_realizado: DataTypes.FLOAT,
+    escopo_previsto: DataTypes.DECIMAL(32, 12), // was FLOAT
+    escopo_realizado: DataTypes.DECIMAL(32, 12), // was FLOAT
     inicio_previsto: DataTypes.DATE,
     inicio_realizado: DataTypes.DATE,
     fim_previsto: DataTypes.DATE,
     fim_realizado: DataTypes.DATE,
-    custo_previsto: DataTypes.FLOAT,
-    custo_realizado: DataTypes.FLOAT,
+    custo_previsto: DataTypes.DECIMAL(32, 12), // was FLOAT
+    custo_realizado: DataTypes.DECIMAL(32, 12), // was FLOAT
     motivo: DataTypes.STRING // migration: 20180319191907-add-motivo-column-in-atualizacao
     // autor: Usuario.id,
     // meta: Meta.id,
