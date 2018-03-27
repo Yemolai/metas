@@ -8,7 +8,7 @@ router.post('/login', function (req, res, next) {
   let session = false // para não manter sessão
   passport.authenticate('local', { session }, (err, usuario, info) => {
     if (err || !usuario) {
-      return res.status(400).json({ // return erro como requisição malformada
+      return res.status(200).json({ // return erro como requisição malformada
         message: info ? info.message : 'Failed to login',
         usuario
       });
