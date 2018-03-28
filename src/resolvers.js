@@ -166,7 +166,7 @@ module.exports = {
     }
   },
   Meta: {
-    titulo: getLastValue(db.Atualizacao, 'titulo', 'meta'),
+    titulo: getNonNullLastValue(db.Atualizacao, 'titulo', 'meta'),
     resumo: getLastValue(db.Atualizacao, 'resumo', 'meta'),
     estado: getLastValue(db.Atualizacao, 'estado', 'meta'),
     atualizado: getLastValue(db.Atualizacao, 'createdAt', 'meta'),
