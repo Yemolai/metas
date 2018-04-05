@@ -39,7 +39,7 @@ const getLastValue = (model, field, from, id = 'id') => (
 /**
  * Generates a function to get the last selected non-null value
  * available in a table filtering to other table's id and returns
- * the original value if there are no updates to the field
+ * the original value if there are no updates to the field.
  * @param {Model} model Sequelize model instance to get the value from
  * @param {string} field The desired value column name
  * @param {string} from The fk reference relation column to filter
@@ -49,6 +49,64 @@ const getLastValue = (model, field, from, id = 'id') => (
 const getNonNullLastValue = (model, field, from, id = 'id') => (
   obj => getLastValue(model, field, from, id)(obj)
     .then(v => (v === null ? obj[field] : v))
+)
+
+/**
+ * Generates a function to get the last selected non-null value
+ * available in a table or the sum of the value in children elements
+ * filtering to other table's id and returning the original value
+ * if no updates are found.
+ * @param {Model} parentModel Sequelize model instance of parent object
+ * @param {Model} model Sequelize model instance to get the value from
+ * @param {string} field The desired value column name
+ * @param {string} from The fk reference relation column to filter
+ * @param {string} id The relation pk to refer in filter
+ * @param {string} parentFk The parent fk referente column to filter
+ * @returns {function} function to get the last non-null selected value or the sum of the value of the related children
+ */
+const getSubSumOrNonNullLastValue = (parentModel, model, field, from, id = 'id', parentFk = 'pai') => (
+  getSubSumOr(getNonNullLastValue(model, field, from, id), parentModel, id, parentFk)
+)
+
+/**
+ * Generates a function to get the last selected nullable value
+ * available in a table or the sum of the value in children elements
+ * filtering to other table's id and returning null if no updates are found.
+ * @param {Model} parentModel Sequelize model instance of parent object
+ * @param {Model} model Sequelize model instance to get the value from
+ * @param {string} field The desired value column name
+ * @param {string} from The fk reference relation column to filter
+ * @param {string} id The relation pk to refer in filter
+ * @param {string} parentFk The parent fk referente column to filter
+ * @returns {function} function to get the last non-null selected value or the sum of the value of the related children
+ */
+const getSubSumOrLastValue = (parentModel, model, field, from, id = 'id', parentFk = 'pai') => (
+  getSubSumOr(getLastValue(model, field, from, id), parentModel, id, parentFk)
+)
+
+/**
+ * Generates a intermediate function to get the children elements
+ * of given object and runs a given sum function of their selected value
+ * or runs the given sum function in the object itself it no child is found.
+ * @requires Bluebird
+ * @param {Model} parentModel Sequelize model instance of parent object
+ * @param {Model} model Sequelize model instance to get the value from
+ * @param {string} field The desired value column name
+ * @param {string} from The fk reference relation column to filter
+ * @param {string} id The relation pk to refer in filter
+ * @param {string} parentFk The parent fk referente column to filter
+ * @returns {function} function to get the last non-null selected value or the sum of the value of the related children
+ */
+const getSubSumOr = (lastValueMethod, parentModel, id, parentFk) => (
+  (obj) => parentModel.findAll({ where: { [parentFk]: obj[id] } })
+    .then(children => {
+      if (children.length > 0) {
+        return require('bluebird').all(children.map(child => lastValueMethod(child)))
+          .reduce((p, a) => isNaN(Number(a)) ? p : p + Number(a), 0)
+      } else {
+        return lastValueMethod(obj)
+      }
+    })
 )
 
 /**
@@ -170,14 +228,14 @@ module.exports = {
     resumo: getLastValue(db.Atualizacao, 'resumo', 'meta'),
     estado: getLastValue(db.Atualizacao, 'estado', 'meta'),
     atualizado: getLastValue(db.Atualizacao, 'createdAt', 'meta'),
-    escopo_previsto: getNonNullLastValue(db.Atualizacao, 'escopo_previsto', 'meta'),
-    escopo_realizado: getLastValue(db.Atualizacao, 'escopo_realizado', 'meta'),
+    escopo_previsto: getSubSumOrNonNullLastValue(db.Meta, db.Atualizacao, 'escopo_previsto', 'meta'),
+    escopo_realizado: getSubSumOrLastValue(db.Meta, db.Atualizacao, 'escopo_realizado', 'meta'),
     inicio_previsto: getNonNullLastValue(db.Atualizacao, 'inicio_previsto', 'meta'),
     inicio_realizado: getLastValue(db.Atualizacao, 'inicio_realizado', 'meta'),
     fim_previsto: getNonNullLastValue(db.Atualizacao, 'fim_previsto', 'meta'),
     fim_realizado: getLastValue(db.Atualizacao, 'fim_realizado', 'meta'),
-    custo_previsto: getNonNullLastValue(db.Atualizacao, 'custo_previsto', 'meta'),
-    custo_realizado: getLastValue(db.Atualizacao, 'custo_realizado', 'meta'),
+    custo_previsto: getSubSumOrNonNullLastValue(db.Meta, db.Atualizacao, 'custo_previsto', 'meta'),
+    custo_realizado: getSubSumOrLastValue(db.Meta, db.Atualizacao, 'custo_realizado', 'meta'),
     pai: getN1(db.Meta, 'pai'),
     responsavel: getN1(db.Usuario, 'responsavel'),
     coordenadoria: getN1(db.Coordenadoria, 'coordenadoria'),
