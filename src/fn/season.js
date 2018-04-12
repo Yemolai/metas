@@ -1,0 +1,1 @@
+module.exports = (v) => v ? v : null // TODO season and salt passwords

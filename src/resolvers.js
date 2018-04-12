@@ -4,202 +4,29 @@ const isNumber = value =>!isNaN(Number(value));
 const db = require('../models');
 const Op = db.Sequelize.Op;
 
-// Scalar type creation tools
-const { GraphQLScalarType } = require('graphql');
-const { Kind } = require('graphql/language');
+const fn = './fn'
+const types = './types'
+const season = require(fn + '/season');
+const {
+  getLastValue,
+  getNonNullLastValue,
+  getSubSumOrNonNullLastValue,
+  getSubSumOrLastValue
+} = require(fn + '/getLast')
+const { getN1, get1N, getFiltered1N } = require(fn + '/related')
 
-// ex:
-// getLastvalue(db.Atualizacao, 'estado', 'meta', 'id') generate:
-// Meta => db.Atualizacao.findOne({
-//   attributes: ['id', 'estado'],
-//   order: [['id', 'DESC']],
-//   where: { meta: Meta.id, estado: { [Op.not]: null } }
-// }).then(e => (e ? e.estado : null))
+const typeLoader = path => (database => (typeName => (require(path + '/' + typeName))(database)))
+const load = typeLoader('./types')(db)
 
-/**
- * Generates a function to get the last selected non-null value 
- * available in a table filtering to other table's id
- * @param {Model} model Sequelize model instance to get the value from
- * @param {string} field The desired value column name
- * @param {string} from The fk reference relation column to filter
- * @param {string} id The relation pk to refer in filter
- * @return {function} function to get the last non-null selected value
- */
-const getLastValue = (model, field, from, id = 'id') => (
-  obj => model.findOne({
-    attributes: [id, field],
-    order: [[id, 'DESC']],
-    where: { [from]: obj[id], [field]: { [Op.not]: null } }
-  }).then(result => (result ? result[field] : null))
-)
-
-// getNonNullLastValue(db.Atualizacao, 'escopo_previsto', 'meta') generates:
-// escopo_previsto: meta => getLastValue(db.Atualizacao, 'escopo_previsto', 'meta')(meta)
-//   .then(value => value === null ? meta.escopo_previsto : value)
-/**
- * Generates a function to get the last selected non-null value
- * available in a table filtering to other table's id and returns
- * the original value if there are no updates to the field.
- * @param {Model} model Sequelize model instance to get the value from
- * @param {string} field The desired value column name
- * @param {string} from The fk reference relation column to filter
- * @param {string} id The relation pk to refer in filter
- * @return {function} function to get the last non-null selected value
- */
-const getNonNullLastValue = (model, field, from, id = 'id') => (
-  obj => getLastValue(model, field, from, id)(obj)
-    .then(v => (v === null ? obj[field] : v))
-)
-
-/**
- * Generates a function to get the last selected non-null value
- * available in a table or the sum of the value in children elements
- * filtering to other table's id and returning the original value
- * if no updates are found.
- * @param {Model} parentModel Sequelize model instance of parent object
- * @param {Model} model Sequelize model instance to get the value from
- * @param {string} field The desired value column name
- * @param {string} from The fk reference relation column to filter
- * @param {string} id The relation pk to refer in filter
- * @param {string} parentFk The parent fk referente column to filter
- * @returns {function} function to get the last non-null selected value or the sum of the value of the related children
- */
-const getSubSumOrNonNullLastValue = (parentModel, model, field, from, id = 'id', parentFk = 'pai') => (
-  getSubSumOr(getNonNullLastValue(model, field, from, id), parentModel, id, parentFk)
-)
-
-/**
- * Generates a function to get the last selected nullable value
- * available in a table or the sum of the value in children elements
- * filtering to other table's id and returning null if no updates are found.
- * @param {Model} parentModel Sequelize model instance of parent object
- * @param {Model} model Sequelize model instance to get the value from
- * @param {string} field The desired value column name
- * @param {string} from The fk reference relation column to filter
- * @param {string} id The relation pk to refer in filter
- * @param {string} parentFk The parent fk referente column to filter
- * @returns {function} function to get the last non-null selected value or the sum of the value of the related children
- */
-const getSubSumOrLastValue = (parentModel, model, field, from, id = 'id', parentFk = 'pai') => (
-  getSubSumOr(getLastValue(model, field, from, id), parentModel, id, parentFk)
-)
-
-/**
- * Generates a intermediate function to get the children elements
- * of given object and runs a given sum function of their selected value
- * or runs the given sum function in the object itself it no child is found.
- * @requires Bluebird
- * @param {Model} parentModel Sequelize model instance of parent object
- * @param {Model} model Sequelize model instance to get the value from
- * @param {string} field The desired value column name
- * @param {string} from The fk reference relation column to filter
- * @param {string} id The relation pk to refer in filter
- * @param {string} parentFk The parent fk referente column to filter
- * @returns {function} function to get the last non-null selected value or the sum of the value of the related children
- */
-const getSubSumOr = (lastValueMethod, parentModel, id, parentFk) => (
-  (obj) => parentModel.findAll({ where: { [parentFk]: obj[id] } })
-    .then(children => {
-      if (children.length > 0) {
-        return require('bluebird').all(children.map(child => lastValueMethod(child)))
-          .reduce((p, a) => isNaN(Number(a)) ? p : p + Number(a), 0)
-      } else {
-        return lastValueMethod(obj)
-      }
-    })
-)
-
-/**
- * Function to get related model instance from integer FK
- * assuming PK is 'id' column
- * @param {Model} model Sequelize Model instance
- * @param {string} field fk column name
- * @return {function} wrapper to findById
- */
-const getN1 = (model, fk) => (obj => model.findById(obj[fk]))
-
-/**
- * Function to get model instances related to integer FK
- * assuming PK is 'id' column
- * @param {Model} model Sequelize Model instance
- * @param {string} fk fk column name
- * @return {function} wrapper to findAll
- */
-const get1N = (model, fk) => (obj => model.findAll({ where: { [fk]: obj.id }}))
-
-/**
- * Function to get model instances related to integer FK
- * assuming PK is 'id' column
- * @param {Model} model Sequelize Model instance
- * @param {string} fk fk column name
- * @param {function} filter function to apply in result array
- * @return {function} wrapper to findAll.filter
- */
-const getFiltered1N = (model, fk, filter) => obj => get1N(model, fk)(obj)
-  .then(N => N.filter(filter(N, obj)))
+const Usuario = load('Usuario')
+const Setor = load('Setor')
 
 module.exports = {
-  // custom Obj type to use in schema
-  Obj: new GraphQLScalarType({
-    name: 'Obj',
-    description: 'JSON object',
-    parseValue(value) {
-      return JSON.parse(value);
-    },
-    serialize(value) {
-      return JSON.stringify(value);
-    },
-    parseLiteral(ast) {
-      if (ast.kind === Kind.STRING) {
-        return JSON.parse(ast.value);
-      }
-      return null;
-    }
-  }),
   // custom Date type to use in the schema
-  Date: new GraphQLScalarType({
-    name: 'Date',
-    description: 'Date custom scalar type',
-    /**
-     * Parse the number value received from the client to Date obj
-     * @param {number} value number received from client
-     * @return {Date} Date object generated from received value
-     */
-    parseValue(value) { // value from the client
-      return new Date(value);
-    },
-    /**
-     * Serialize Date object into number value to send
-     * @param {*} value can receive multiple types as it can be null
-     * @return {number} 
-     */
-    serialize(value) {
-      return value instanceof Date ? value.getTime() : null; // value sent to the client
-    },
-    /**
-     * Parse a literal object to verify its integrity
-     * @param {*} ast 
-     * @return {*} a number if successful, null otherwise
-     */
-    parseLiteral(ast) {
-      if (ast.kind === Kind.INT) {
-        return parseInt(ast.value, 10); // ast value is always in string format
-      }
-      return null;
-    },
-  }),
+  Date: require(types + '/Date'),
   // Type Usuario related to the model Usuario
-  Usuario: {
-    permissoes: getN1(db.Permissao, 'permissoes'),
-    setor: getN1(db.Setor, 'setor'),
-    coordenadoria: getN1(db.Setor, 'coordenadoria'),
-    responsabilidade: get1N(db.Meta, 'responsavel')
-  },
-  Setor: {
-    autor: getN1(db.Usuario, 'autor'),
-    responsavel: getN1(db.Usuario, 'responsavel'),
-    coordenadorias: get1N(db.Coordenadoria,'setor')
-  },
+  Usuario: Usuario.computed,
+  Setor: Setor.computed,
   Coordenadoria: {
     setor: getN1(db.Setor, 'setor'),
     responsavel: getN1(db.Usuario, 'responsavel'),
@@ -253,8 +80,8 @@ module.exports = {
   Query: {
     permissoes: (_, { filter }) => db.Permissao.findAll(filter ? { filter } : {}),
     permissao: (_, { id }) => db.Permissao.findById(id),
-    usuarios: (_, { filter }) => db.Usuario.findAll(filter ? { filter } : {}),
-    usuario: (_, { id }) => db.Usuario.findById(id),
+    usuarios: Usuario.query.all,
+    usuario: Usuario.query.byId,
     setores: (_, { filter }) => db.Setor.findAll(filter ? { filter } : {}),
     setor: (_, { id }) => db.Setor.findById(id),
     // coordenadorias: (_, { filter }) => db.Coordenadoria.findAll(filter ? { filter } : {}),
@@ -330,44 +157,11 @@ module.exports = {
         autor: args.autor || null,
       })
     },
-    deleteUsuario: (_, { id }) => db.Meta.findById(id)
-      .then(usr => usr.destroy())
-      .then(() => id)
-      .catch(() => 0),
-    addUsuario: (_, args) => {
-      // required fields
-      if (!('usuario' in args && 'nome' in args && 'permissoes' in args)) {
-        return null;
-      }
-      return db.Usuario.create({
-        guid: args.guid || null,
-        matricula: args.matricula || null,
-        nome: args.nome,
-        usuario: args.usuario,
-        senha: args.senha || null,
-        permissoes: args.permissoes,
-        setor: args.setor || null,
-        coordenadoria: args.coordenadoria || null
-      })
-    },
-    deleteSetor: (_, { id }) => db.Setor.findById(id)
-        .then(setor => setor.destroy())
-        .then(() => id)
-        .catch(() => 0),
-    addSetor: (_, args) => {
-      if (!('sigla' in args && 'nome' in args)) {
-        return null;
-      }
-      return db.Setor.create({
-        sigla: args.sigla,
-        nome: args.nome,
-        endereco: args.endereco || null,
-        telefone: args.telefone || null,
-        ramal: args.ramal || null,
-        responsavel: args.responsavel || null,
-        autor: args.autor || null
-      })
-    },
+    addUsuario: Usuario.mutation.create,
+    deleteUsuario: Usuario.mutation.delete,
+    changePassword: Usuario.mutation.changePassword,
+    deleteSetor: Setor.mutation.delete,
+    addSetor: Setor.mutation.create,
     deletePermissao: (root, args) => db.Permissao.findById(args.id)
         .then(permissao => permissao.destroy())
         .then(() => args.id)

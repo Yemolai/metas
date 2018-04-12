@@ -139,6 +139,7 @@ const typeDefs = `
 
     # The mutation root type, used to define all mutations.
     type Mutation {
+      changePassword(id: ID!, oldPassword: String, newPassword: String!): Boolean
       deleteAtualizacao(id: ID!): Int
       addAtualizacao(
         titulo: String,
