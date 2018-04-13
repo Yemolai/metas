@@ -1,6 +1,32 @@
 const { makeExecutableSchema } = require('graphql-tools');
 const map = require('./fn/map');
-const resolvers = require('./resolvers'); // Will be implemented at a later stage.
+const db = require('../models');
+
+const TypeRequire = TypeDir => db => name => require(TypeDir + '/' + name)(db);
+const resolver = obj => map(v => v.resolver)(obj);
+const typeDir = './types';
+const TypeNames = [
+  'Usuario',
+  'Setor',
+  'Coordenadoria',
+  'Meta',
+  'Atualizacao',
+  'Permissao'
+];
+const typeRequire = TypeRequire(typeDir)(db);
+const Types = TypeNames.map(name => ({ name, ...typeRequire(name) }));
+const Computed = Types.reduce((p, a) => ({...p, [a.name]: (a.computed || {})}), {});
+const Query = Types.reduce((p, a) => Object.assign(p, resolver(a.Query)), {});
+const Mutation = Types.reduce((p, a) => Object.assign(p, resolver(a.Mutation)), {});
+
+const resolvers = {
+  // custom Types
+  Date: require('./scalar/Date'),
+  ...Computed,
+  Query,
+  Mutation,
+};
+
 const defs = obj => map(v => v.def)(obj);
 const typeDefs = `
     scalar Date
