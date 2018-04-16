@@ -4,7 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const passport = require('passport');
 require('./src/passport'); // to run passport-related config
-const schema = require('./src/schema');
+const schema = require('./src/schema/');
 const auth = require('./src/routes/auth');
 const user = require('./src/routes/user');
 const cfg = require('./config/server.json');
