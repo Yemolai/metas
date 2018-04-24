@@ -8,6 +8,9 @@ var env       = process.env.NODE_ENV || 'development';
 var config    = require(__dirname + '/../config/config.json')[env];
 var db        = {};
 
+// default behaviour is disabled logging (to enable define logging: console.log in config.json)
+config = Object.assign({logging: false}, config);
+
 if (config.use_env_variable) {
   var sequelize = new Sequelize(process.env[config.use_env_variable], config);
 } else {
