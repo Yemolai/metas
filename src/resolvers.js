@@ -219,7 +219,6 @@ module.exports = {
       if (!isNaN(Number(offset))) {
         conditions['offset'] = offset
       }
-      console.log({conditions})
       return db.Meta.findAll(conditions)
     }
   },
