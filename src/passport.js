@@ -24,19 +24,10 @@ passport.use(new JWTStrategy({
   jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
   secretOrKey: 'jwt_secret'
 }, function (jwtPayload, cb) { // used with jwtStrategy
-  console.log('jwtPayload', jwtPayload)
   db.Usuario.findOne({ where: {id: jwtPayload.id} })
-    .then(usr => {
-      console.log('user:', usr)
-      if (usr === null) {
-        console.log('no user found, returning false')
-        return cb(null, false, {message: 'USER_NOT_FOUND'})
-      }
-      console.log('user found, returning its data')
-      return cb(null, usr.dataValues)
-    })
-    .catch(err => {
-      console.log('An unknown error occurred:', err)
-      return cb(err)
-    });
+    .then(usr => usr
+      ? cb(null, usr.dataValues)
+      : cb(null, false, {message: 'USER_NOT_FOUND'})
+    )
+    .catch(err => cb(err));
 }));
