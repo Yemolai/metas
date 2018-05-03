@@ -1,6 +1,6 @@
 {
   "name": "backend-sedop-metas",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "description": "backend server software to provide data and authentication to milestone control application",
   "main": "server.js",
   "scripts": {
