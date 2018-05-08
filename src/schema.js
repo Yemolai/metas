@@ -34,6 +34,8 @@ const typeDefs = `
       own_meta_delete: Boolean!
       own_atual_update: Boolean!
       own_atual_delete: Boolean!
+      createdAt: Date!
+      updatedAt: Date
     }
 
     type Usuario {
@@ -47,6 +49,8 @@ const typeDefs = `
       setor: Setor
       coordenadoria: Coordenadoria
       responsabilidade: [Meta]
+      createdAt: Date!
+      updatedAt: Date
     }
 
     type Setor {
@@ -59,6 +63,8 @@ const typeDefs = `
       responsavel: Usuario
       autor: Usuario
       coordenadorias: [Coordenadoria!]
+      createdAt: Date!
+      updatedAt: Date
     }
 
     type Coordenadoria {
@@ -76,6 +82,8 @@ const typeDefs = `
         limit: Int,
         offset: Int
       ): [Meta!]
+      createdAt: Date!
+      updatedAt: Date
     }
 
     type Meta {
@@ -121,7 +129,8 @@ const typeDefs = `
       responsavel: Usuario
       pai: Meta
       coordenadoria: Coordenadoria
-      createdAt: Date
+      createdAt: Date!
+      updatedAt: Date
     }
 
     # This type specifies the entry points into our API. 
