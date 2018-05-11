@@ -138,6 +138,8 @@ const get1N = (model, fk) => (obj => model.findAll({ where: { [fk]: obj.id }}))
 const getFiltered1N = (model, fk, filter) => obj => get1N(model, fk)(obj)
   .then(N => N.filter(filter(N, obj)))
 
+const season = v => v
+
 module.exports = {
   // custom Obj type to use in schema
   Obj: new GraphQLScalarType({
@@ -329,6 +331,17 @@ module.exports = {
         autor: args.autor || null,
       })
     },
+    changePassword: (_, { id, oldPassword, newPassword }) => db.Usuario.findById(id)
+    .then(usuario => {
+      if (season(oldPassword) === usuario.senha) {
+        return usuario.update({
+          senha: season(newPassword)
+        })
+          .then(() => true)
+          .catch(() => false)
+      }
+      return false
+    }),
     deleteUsuario: (_, { id }) => db.Meta.findById(id)
       .then(usr => usr.destroy())
       .then(() => id)

@@ -191,6 +191,7 @@ const typeDefs = `
         responsavel: Int,
         autor: Int,
       ): Coordenadoria
+      changePassword(id: ID!, oldPassword: String, newPassword: String!): Boolean
       deleteUsuario(id: ID!): Int
       addUsuario(
         guid: String,
