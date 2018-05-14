@@ -274,6 +274,7 @@ module.exports = {
         titulo: args.titulo || null,
         resumo: args.resumo || null,
         estado: args.estado || null,
+        motivo: args.motivo || null,
         escopo_previsto: args.escopo_previsto || null,
         escopo_realizado: args.escopo_realizado || null,
         inicio_previsto: args.inicio_previsto || null,
