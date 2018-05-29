@@ -36,7 +36,7 @@ module.exports = db => ({
    */
   Query: {
     atualizacoes: {
-      def: `atualizacoes(filter: Obj): [Atualizacao]`,
+      def: `atualizacoes: [Atualizacao]`,
       resolver: _ => db.Atualizacao.findAll()
     }
   },

@@ -16,8 +16,8 @@ module.exports = db => ({
    */
   Query: {
     setores: {
-      def: `setores(filter: Obj): [Setor!]`,
-      resolver: (_, { filter }) => db.Setor.findAll(filter ? { filter } : {})
+      def: `setores: [Setor!]`,
+      resolver: (_, { filter }) => db.Setor.findAll()
     },
     setor: {
       def: `setor(id: ID!): Setor`,
